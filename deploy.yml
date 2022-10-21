@@ -1,0 +1,75 @@
+---
+    - name: Install Home Assistant Supervised
+      hosts: all
+      become: yes
+
+      tasks:
+      - name: Update repo and cache
+        apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+      - name: Upgrade all packages
+        apt: upgrade=dist force_apt_get=yes
+
+      - name: Install base packages (apparmor, jq, wget, curl ...)
+        ansible.builtin.apt:
+          pkg:
+            - apparmor
+            - jq
+            - wget
+            - curl
+            - udisks2
+            - libglib2.0-bin
+            - network-manager
+            - dbus
+            - systemd-journal-remote
+            - zip
+            - unzip
+          state: present
+
+      - name: Add Docker signing key
+        ansible.builtin.apt_key:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          state: present
+
+      - name: Add Docker CE repository
+        ansible.builtin.apt_repository:
+          repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+          update_cache: yes
+          state: present
+
+      - name: Install docker-ce and docker-compose
+        ansible.builtin.apt:
+          pkg:
+          - docker-ce
+          - docker-compose
+          state: present
+
+      - name: Adding to docker group
+        ansible.builtin.user:
+          name: "ubuntu"
+          groups: "docker"
+          append: true
+
+      - name: Install os-agent
+        ansible.builtin.apt:
+          deb: "https://github.com/home-assistant/os-agent/releases/download/1.4.1/os-agent_1.4.1_linux_{{ ansible_architecture }}.deb"
+          state: present
+
+      - name: Check if a reboot is needed
+        register: reboot_required_file
+        stat: path=/var/run/reboot-required get_md5=no
+
+      - name: Reboot server when required
+        reboot:
+          msg: "Reboot initiated by Ansible due to kernel updates"
+          connect_timeout: 5
+          reboot_timeout: 300
+          pre_reboot_delay: 0
+          post_reboot_delay: 30
+          test_command: uptime
+        when: reboot_required_file.stat.exists
+
+      - name: Install homeassistant-supervised
+        ansible.builtin.apt:
+          deb: https://github.com/home-assistant/supervised-installer/releases/latest/download/homeassistant-supervised.deb
+          state: present
