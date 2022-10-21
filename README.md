@@ -1,5 +1,5 @@
-# home-assistant installer
-Ansible Playbook for Installing Home Assistant Supervised
+# home assistant installer
+Ansible Playbook for [Installing Home Assistant Supervised](https://github.com/home-assistant/supervised-installer/)
 
 ## Motivation
 
@@ -32,6 +32,10 @@ This will install required packages, docker and of course the home-assistant wit
 
 ## Known problems
 
-I'm using ansible_architecture for choosing the version of the os-agent. The corresponding packages of the release are named differently for the Raspberry Pis as in armv7l instead of armv7 (name of the package in the release of the os agent).
+I'm using ansible_architecture for choosing the version of the [os-agent](https://github.com/home-assistant/os-agent). The corresponding packages of the release are named differently for the Raspberry Pis as in armv7l instead of armv7 (name of the package in the release of the os agent).
 
 Will have to build a workaround for that...
+
+See yourself under github releases for the most current appropriate version:
+
+https://github.com/home-assistant/os-agent/releases
